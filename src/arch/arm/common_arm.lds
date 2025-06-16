@@ -14,6 +14,12 @@ ENTRY(_start)
 
 KERNEL_OFFSET = KERNEL_ELF_BASE_RAW - KERNEL_ELF_PADDR_BASE_RAW;
 
+PHDRS
+{
+    kernel    PT_LOAD FLAGS(0x7); /* R + W + X  */
+    nobits    PT_LOAD FLAGS(0x6); /* R + W */
+}
+
 SECTIONS
 {
     . = KERNEL_ELF_BASE_RAW;
@@ -24,7 +30,7 @@ SECTIONS
         *(.boot.rodata)
         *(.boot.data)
         . = ALIGN(64K);
-    }
+    } :kernel
 
     ki_boot_end = .;
 
@@ -58,6 +64,8 @@ SECTIONS
     {
         *(.data)
     }
+    
+    . = ALIGN(4K);
 
     .bss . (NOLOAD): AT(ADDR(.bss) - KERNEL_OFFSET)
     {
@@ -73,7 +81,7 @@ SECTIONS
 
         /* large data such as the globals frame and global PD */
         *(.bss.aligned)
-    }
+    } :nobits
 
     . = ALIGN(4K);
     ki_end = .;
